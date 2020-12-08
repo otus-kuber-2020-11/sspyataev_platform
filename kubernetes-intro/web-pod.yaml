@@ -9,14 +9,14 @@ spec:
   containers:
     - name: web-server
       image: sspyataev/web-server:latest
-      imagePullPolicy: IfNotPresent
+      imagePullPolicy: Always
       volumeMounts:
       - name: app
         mountPath: /app
   initContainers:
     - name: init-index
       image: busybox:1.31.0
-      imagePullPolicy: IfNotPresent
+      imagePullPolicy: Always
       volumeMounts:
       - name: app
         mountPath: /app
