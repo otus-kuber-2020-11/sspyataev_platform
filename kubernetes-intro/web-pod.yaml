@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+  labels:
+    app: web
+
+spec:
+  containers:
+    - name: web
+      image: sspyataev/web-server:latest
+      imagePullPolicy: Always
+      volumeMounts:
+      - name: app
+        mountPath: /app
+  initContainers:
+    - name: init-index
+      image: busybox:1.31.0
+      imagePullPolicy: Always
+      volumeMounts:
+      - name: app
+        mountPath: /app
+      command: ['sh', '-c', 'wget -O- https://tinyurl.com/otus-k8s-intro | sh']
+  volumes:
+  - name: app
+    emptyDir: {}
