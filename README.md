@@ -34,3 +34,12 @@ kubectl get ds --all-namespaces
 NAMESPACE     NAME         DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
 kube-system   kube-proxy   1         1         1       1            1           kubernetes.io/os=linux   110m
 ```
+
+Homework #2
+Было сделано:
+* Установлен kind и поднят тестовый кластер
+* Создан и изучен ReplicaSet для frontend (скалирование, обновление)
+* Собран сервис paymentService
+* Создан и изучен Deployment для paymentService (обновление, стратегии обновления)
+* Изучены probes. Добавлена readinessProbe для frontend.
+* Рассмотрен контроллер DaemonSet
