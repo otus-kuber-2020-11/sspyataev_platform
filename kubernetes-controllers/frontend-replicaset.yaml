@@ -36,11 +36,3 @@ spec:
           value: "adservice:9555"
         - name: ENV_PLATFORM
           value: "gcp"
-        readinessProbe:
-          initialDelaySeconds: 10
-          httpGet:
-            path: "/_healthz"
-            port: 8080
-            httpHeaders:
-            - name: "Cookie"
-              value: "shop_session-id=x-readiness-probe"
