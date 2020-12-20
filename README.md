@@ -43,3 +43,9 @@ Homework #2
 * Создан и изучен Deployment для paymentService (обновление, стратегии обновления)
 * Изучены probes. Добавлена readinessProbe для frontend.
 * Рассмотрен контроллер DaemonSet
+
+Homework #3
+Было сделано:
+* Изучена авторизация в kubernetes на основе RBAC.
+* Созданы манифесты для создания объектов в kubernetes.
+* Созданы манифесты для управления доступом к namespaces и к кластеру в целом.
