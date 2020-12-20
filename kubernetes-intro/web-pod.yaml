@@ -9,6 +9,13 @@ spec:
   containers:
     - name: web
       image: sspyataev/web-server:latest
+      readinessProbe:
+        httpGet:
+          path: /index.html 
+          port: 80
+      livenessProbe:
+        tcpSocket:
+          port: 8000
       imagePullPolicy: Always
       volumeMounts:
       - name: app
