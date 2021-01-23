@@ -1,0 +1,8 @@
+image:
+  tag: v0.1.4
+replicas: 1
+service:
+  type: NodePort
+  port: 80
+  targetPort: 8080
+  NodePort: 31031

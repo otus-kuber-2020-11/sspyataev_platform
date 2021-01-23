@@ -61,3 +61,10 @@ Homework #5
 * Рассмотрено создание локального S3 хранилища MinIO
 * Развёрнут StatefulSet MinIO
 * Создан Headless Service minio и проверена работа MinIO
+
+Homework #6
+Было сделано:
+* Регистрация в GCP, разворачивание кластера
+* Установка Helm, установка charts nginx-ingress, cert-manager, chartmuseum, harbor
+* Создан кастомный helm chart для hipster-shop
+* Рассмотрены подходы к шаблонизации манифестов Kubecfg, Kustomize

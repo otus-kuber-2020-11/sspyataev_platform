@@ -1,0 +1,18 @@
+expose:  
+  tls:
+    enabled: true
+    secret:
+      secretName: "harbor.104.154.39.165.sslip.io"
+
+  
+  ingress:
+    hosts:
+      core: harbor.104.154.39.165.sslip.io
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      kubernetes.io/tls-acme: "true"
+      cert-manager.io/cluster-issuer: "letsencrypt-production"
+      cert-manager.io/acme-challenge-type: http01
+
+notary:
+  enabled: false
