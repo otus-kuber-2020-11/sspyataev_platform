@@ -74,3 +74,15 @@ Homework #6
 * Рассмотрено создание Custom Resource и Custom Resource Definition
 * Рассмотрена создание оператора. Опубликован кастомный оператор в докерхаб
 * Задеплоен оператор и проверена его работа
+* kubectl get jobs
+NAME                         COMPLETIONS   DURATION   AGE
+backup-mysql-instance-job    1/1           6s         26m
+restore-mysql-instance-job   1/1           55m        55m
+* kubectl exec -it $MYSQLPOD -- mysql -potuspassword -e "select * from test;" otus-database
+mysql: [Warning] Using a password on the command line interface can be insecure.
++----+-------------+
+| id | name        |
++----+-------------+
+|  1 | some data   |
+|  2 | some data-2 |
++----+-------------+
