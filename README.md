@@ -68,3 +68,9 @@ Homework #6
 * Установка Helm, установка charts nginx-ingress, cert-manager, chartmuseum, harbor
 * Создан кастомный helm chart для hipster-shop
 * Рассмотрены подходы к шаблонизации манифестов Kubecfg, Kustomize
+
+Homework #6
+Было сделано:
+* Рассмотрено создание Custom Resource и Custom Resource Definition
+* Рассмотрена создание оператора. Опубликован кастомный оператор в докерхаб
+* Задеплоен оператор и проверена его работа
