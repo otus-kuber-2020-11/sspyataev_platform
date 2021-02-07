@@ -21,3 +21,4 @@ spec:
           ports:
           - name: nginx-exporter
             containerPort: 9113
+            
