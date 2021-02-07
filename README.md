@@ -69,7 +69,7 @@ Homework #6
 * Создан кастомный helm chart для hipster-shop
 * Рассмотрены подходы к шаблонизации манифестов Kubecfg, Kustomize
 
-Homework #6
+Homework #7
 Было сделано:
 * Рассмотрено создание Custom Resource и Custom Resource Definition
 * Рассмотрена создание оператора. Опубликован кастомный оператор в докерхаб
@@ -86,3 +86,13 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 |  1 | some data   |
 |  2 | some data-2 |
 +----+-------------+
+
+Homework #8
+Было сделано:
+* Создан кастомный образ nginx, который по пути /basic_status отдаёт stub_status, опубликован в DockerHub
+* Описаны манифесты для запуска кастомного образа в k8s в количестве трёх реплик (Deployment & Service)
+* Описаны манифесты для nginx exporter, который преобразует информацию из stub_status в prom-like формат (Deployment & Service)
+* Добавлены CRD для prometheus-operator и создан ServiceMonitor
+* Запущен prometheus server и Grafana для проверки корректности работы мониторинга
+* Скриншот из grafana для nginx-exporter:
+![Снимок экрана от 2021-02-07 15-25-30](https://user-images.githubusercontent.com/26296907/107145343-42958380-695a-11eb-9070-b68136e1465a.png)
