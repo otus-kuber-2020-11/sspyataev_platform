@@ -96,3 +96,12 @@ Homework #8
 * Запущен prometheus server и Grafana для проверки корректности работы мониторинга
 * Скриншот из grafana для nginx-exporter:
 ![Снимок экрана от 2021-02-07 15-25-30](https://user-images.githubusercontent.com/26296907/107145343-42958380-695a-11eb-9070-b68136e1465a.png)
+
+Homework #9
+* Развёрнут HipsterShop в кластере GKE
+* Установлен EFK стэк и подкючён к приложению
+* Развёрнут ingress-controller по одному на каждую ноду infra-pool
+* Настроен мониторинг ElasticSearch через Prometheus Operator
+* Построены визуализации для nginx и визуализации объединены в dashboard. Результат выгружен в файл export.ndjson
+* В prometheus-operator.values.yaml добавлен datasource Loki в блок Grafana
+* Построен dashboard в grafana для визуализации логов и метрик для nginx-controller.
