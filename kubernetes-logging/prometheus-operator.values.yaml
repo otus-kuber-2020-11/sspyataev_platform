@@ -31,3 +31,8 @@ grafana:
               operator: In
               values:
               - infra-pool
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      access: direct
+      url: http://loki:3100
