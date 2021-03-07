@@ -1,0 +1,38 @@
+prometheus:
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+    hosts:
+      - prometheus.34.70.215.143.xip.io
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: cloud.google.com/gke-nodepool
+              operator: In
+              values:
+              - infra-pool
+
+grafana:
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+    hosts:
+      - grafana.34.70.215.143.xip.io
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: cloud.google.com/gke-nodepool
+              operator: In
+              values:
+              - infra-pool
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      access: direct
+      url: http://loki:3100
