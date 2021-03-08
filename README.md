@@ -98,7 +98,7 @@ Homework #8
 ![Снимок экрана от 2021-02-07 15-25-30](https://user-images.githubusercontent.com/26296907/107145343-42958380-695a-11eb-9070-b68136e1465a.png)
 
 Homework #9
-* Развёрнут HipsterShop в кластере GKE
+* Развёрнут HipsterShop в кластере GKE. https://gitlab.com/sspyataev/microservices-demo.git
 * Установлен EFK стэк и подкючён к приложению
 * Развёрнут ingress-controller по одному на каждую ноду infra-pool
 * Настроен мониторинг ElasticSearch через Prometheus Operator
