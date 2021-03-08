@@ -98,7 +98,7 @@ Homework #8
 ![Снимок экрана от 2021-02-07 15-25-30](https://user-images.githubusercontent.com/26296907/107145343-42958380-695a-11eb-9070-b68136e1465a.png)
 
 Homework #9
-* Развёрнут HipsterShop в кластере GKE. https://gitlab.com/sspyataev/microservices-demo.git
+* Развёрнут HipsterShop в кластере GKE.
 * Установлен EFK стэк и подкючён к приложению
 * Развёрнут ingress-controller по одному на каждую ноду infra-pool
 * Настроен мониторинг ElasticSearch через Prometheus Operator
@@ -107,7 +107,7 @@ Homework #9
 * Построен dashboard в grafana для визуализации логов и метрик для nginx-controller.
 
 Homework #10
-* Развёрнут кластер k8s, собраны образы hipster shop и опубликованы в Docker hub
+* Развёрнут кластер k8s, собраны образы hipster shop и опубликованы в Docker hub. https://gitlab.com/sspyataev/microservices-demo.git
 * Установлен и настроен FluxCD, проверено срабатывание функционала обновления Helm Releases как при обновлении образа, так и обновлении в репо
 <details>
   <summary>строки, указывающие на механизмпроверки изменений в Helm chart</summary>
