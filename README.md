@@ -481,7 +481,7 @@ Homework #12 (#5)
 ```
 * Убедились, что в приложении storage-pod примонитировался Hostpath volume
 ```shell
-  $ kubectl describe pods/my-csi-app
+  $ kubectl describe pods/storage-pod
   Name:         storage-pod
   Namespace:    default
   Priority:     0
