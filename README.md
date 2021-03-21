@@ -436,3 +436,163 @@ iVD4gPvonL38cGIQYE3QIJ7zG7u+sF9r8FxMqDkDocTVdYqmi3MwJB6RgN8c+Wh6
 private_key_type    rsa
 serial_number       25:1f:3c:0c:f2:04:d1:46:e2:76:f4:06:a5:27:ca:1a:dc:65:5f:f2
 ```
+
+Homework #12 (#5)
+Было сделано:
+* Созданы CRD для CSI VolumeSnapshot
+```shell
+  $ kubectl apply -f snapshot.storage.k8s.io_volumesnapshotclasses.yaml
+  $ kubectl apply -f snapshot.storage.k8s.io_volumesnapshotcontents.yaml
+  $ kubectl apply -f snapshot.storage.k8s.io_volumesnapshots.yaml
+```
+* Создан snapshot controller
+```shell
+  $ kubectl apply -f rbac-snapshot-controller.yaml
+  $ kubectl apply -f setup-snapshot-controller.yaml
+```
+* Установлен CSI driver HostPath по инструкции из https://github.com/kubernetes-csi/csi-driver-host-path/blob/master/docs/deploy-1.17-and-later.md и проверен deploy
+```shell
+  $ kubectl get pods
+  NAME                              READY   STATUS      RESTARTS   AGE
+  backup-mysql-instance-job-7v7dz   0/1     Completed   0          53d
+  csi-hostpath-attacher-0           1/1     Running     0          6m22s
+  csi-hostpath-provisioner-0        1/1     Running     0          6m19s
+  csi-hostpath-resizer-0            1/1     Running     0          6m18s
+  csi-hostpath-snapshotter-0        1/1     Running     0          6m17s
+  csi-hostpath-socat-0              1/1     Running     0          6m16s
+  csi-hostpathplugin-0              5/5     Running     0          6m20s
+  mysql-operator-88f997b97-tzzss    1/1     Running     1          53d
+```
+* Установлен StorageClass, PVC, pod
+```shell
+  $ kubectl apply -f csi-storageclass.yaml
+  $ kubectl apply -f csi-pvc.yaml
+  $ kubectl apply -f csi-app.yaml
+```
+* Проверена корректность установки компонентов:
+```shell
+  $ kubectl get pv
+  NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS      CLAIM                               STORAGECLASS      REASON   AGE
+  pvc-af4138bc-8872-412b-a568-19c551956c53   1Gi        RWO            Delete           Bound       default/storage-pvc                 csi-hostpath-sc            22m
+
+  $ kubectl get pvc
+  NAME                        STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS      AGE
+  storage-pvc                 Bound    pvc-af4138bc-8872-412b-a568-19c551956c53   1Gi        RWO            csi-hostpath-sc   24m
+```
+* Убедились, что в приложении storage-pod примонитировался Hostpath volume
+```shell
+  $ kubectl describe pods/my-csi-app
+  Name:         storage-pod
+  Namespace:    default
+  Priority:     0
+  Node:         minikube/192.168.49.2
+  Start Time:   Sun, 21 Mar 2021 13:28:26 +0400
+  Labels:       <none>
+  Annotations:  <none>
+  Status:       Running
+  IP:           172.17.0.12
+  IPs:
+    IP:  172.17.0.12
+  Containers:
+    my-frontend:
+      Container ID:  docker://f7758e3f10b2480aeb33cb989059393a6f929cfecaf448694200646e07873854
+      Image:         busybox
+      Image ID:      docker-pullable://busybox@sha256:ce2360d5189a033012fbad1635e037be86f23b65cfd676b436d0931af390a2ac
+      Port:          <none>
+      Host Port:     <none>
+      Command:
+        sleep
+        1000000
+      State:          Running
+        Started:      Sun, 21 Mar 2021 13:28:47 +0400
+      Ready:          True
+      Restart Count:  0
+      Environment:    <none>
+      Mounts:
+        /data from my-csi-volume (rw)
+        /var/run/secrets/kubernetes.io/serviceaccount from default-token-qj8rr (ro)
+  Conditions:
+    Type              Status
+    Initialized       True 
+    Ready             True 
+    ContainersReady   True 
+    PodScheduled      True 
+  Volumes:
+    my-csi-volume:
+      Type:       PersistentVolumeClaim (a reference to a PersistentVolumeClaim in the same namespace)
+      ClaimName:  storage-pvc
+      ReadOnly:   false
+    default-token-qj8rr:
+      Type:        Secret (a volume populated by a Secret)
+      SecretName:  default-token-qj8rr
+      Optional:    false
+  QoS Class:       BestEffort
+  Node-Selectors:  <none>
+  Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                  node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+  Events:
+    Type     Reason                   Age                  From                                      Message
+    ----     ------                   ----                 ----                                      -------
+    Normal   Scheduled                26m                  default-scheduler                         Successfully assigned default/storage-pod to minikube
+    Warning  VolumeConditionAbnormal  26m (x10 over 26m)   csi-pv-monitor-agent-hostpath.csi.k8s.io  The volume isn't mounted
+    Normal   SuccessfulAttachVolume   26m                  attachdetach-controller                   AttachVolume.Attach succeeded for volume "pvc-af4138bc-8872-412b-a568-19c551956c53"
+    Normal   Pulling                  26m                  kubelet                                   Pulling image "busybox"
+    Normal   Pulled                   26m                  kubelet                                   Successfully pulled image "busybox" in 10.408727233s
+    Normal   Created                  26m                  kubelet                                   Created container my-frontend
+    Normal   Started                  26m                  kubelet                                   Started container my-frontend
+    Normal   VolumeConditionNormal    89s (x241 over 25m)  csi-pv-monitor-agent-hostpath.csi.k8s.io  The Volume returns to the healthy state
+```
+* Проверили работу Hostpath driver. Создали файл /data/hello-world в storage-pod
+```shell
+  $ kubectl exec -it storage-pod /bin/sh
+  / # touch /data/hello-world
+  / # exit
+
+  $ kubectl exec -it $(kubectl get pods --selector app=csi-hostpathplugin -o jsonpath='{.items[*].metadata.name}') -c hostpath /bin/sh
+  / # find / -name hello-world
+  /var/lib/kubelet/pods/75ca26d8-fff8-4331-a0de-4dbd6e455625/volumes/kubernetes.io~csi/pvc-af4138bc-8872-412b-a568-19c551956c53/mount/hello-world
+  /csi-data-dir/ca125560-8a27-11eb-b6ad-0242ac110009/hello-world
+  / # exit
+```
+* Также, корректность работы драйвера можно проверить через VolumeAttachment API
+```shell
+  $ kubectl describe volumeattachment
+  Name:         csi-5802467891ab103009f1f6a3f326a3eb7463c05314cd82de98eec7e5eb697829
+  Namespace:    
+  Labels:       <none>
+  Annotations:  <none>
+  API Version:  storage.k8s.io/v1
+  Kind:         VolumeAttachment
+  Metadata:
+    Creation Timestamp:  2021-03-21T09:28:26Z
+    Managed Fields:
+      API Version:  storage.k8s.io/v1
+      Fields Type:  FieldsV1
+      fieldsV1:
+        f:status:
+          f:attached:
+      Manager:      csi-attacher
+      Operation:    Update
+      Time:         2021-03-21T09:28:26Z
+      API Version:  storage.k8s.io/v1
+      Fields Type:  FieldsV1
+      fieldsV1:
+        f:spec:
+          f:attacher:
+          f:nodeName:
+          f:source:
+            f:persistentVolumeName:
+      Manager:         kube-controller-manager
+      Operation:       Update
+      Time:            2021-03-21T09:28:26Z
+    Resource Version:  11848
+    UID:               048c0bca-372b-43cc-97ee-aca32da1f111
+  Spec:
+    Attacher:   hostpath.csi.k8s.io
+    Node Name:  minikube
+    Source:
+      Persistent Volume Name:  pvc-af4138bc-8872-412b-a568-19c551956c53
+  Status:
+    Attached:  true
+  Events:      <none>
+```
