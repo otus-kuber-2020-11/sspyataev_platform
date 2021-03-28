@@ -618,9 +618,6 @@ Homework #13
   $ kubectl apply -f https://raw.githubusercontent.com/piontec/netperf-operator/master/deploy/cr.yaml
   # Проверяем запуск daemonset
   $ kubectl describe daemonset kube-iptables-tailer -n kube-system
-  ```
-  <details>
-```shell
   Name:           kube-iptables-tailer
   Selector:       app=kube-iptables-tailer
   Node-Selector:  <none>
@@ -658,7 +655,7 @@ Homework #13
       Path:          /var/log
       HostPathType:  
     service-logs:
-      Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+      Type:       EmptyDir (a temporary directory that shares a pod\'s lifetime)
       Medium:     
       SizeLimit:  <unset>
   Events:
@@ -667,15 +664,9 @@ Homework #13
     Warning  FailedCreate      13m (x16 over 16m)  daemonset-controller  Error creating: pods "kube-iptables-tailer-" is forbidden: error looking up service account kube-system/kube-iptables-tailer: serviceaccount "kube-iptables-tailer" not found
     Normal   SuccessfulCreate  11m                 daemonset-controller  Created pod: kube-iptables-tailer-6vvkw
     Normal   SuccessfulCreate  11m                 daemonset-controller  Created pod: kube-iptables-tailer-s4rvc
-```
-</details>
 
-  * В итоге, в описании пода видим ошибки связанные с сетевыми политиками:
-  ```shell
+  # В итоге, в описании пода видим ошибки связанные с сетевыми политиками:
   $ kubectl describe pod --selector=app=netperf-operator
-  ```
-  <details>
-  ```shell
   Name:         netperf-client-cbc72f029e9b
   Namespace:    default
   Priority:     0
@@ -788,5 +779,3 @@ Homework #13
     Normal   Started     2m24s  kubelet               Started container netperf-server-cbc72f029e9b
     Warning  PacketDrop  2m22s  kube-iptables-tailer  Packet dropped when receiving traffic from 10.4.2.9
     Warning  PacketDrop  11s    kube-iptables-tailer  Packet dropped when receiving traffic from client (10.4.2.9)
-  ```
-  </details>
