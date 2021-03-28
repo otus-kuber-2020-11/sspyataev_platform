@@ -596,3 +596,197 @@ Homework #12 (#5)
     Attached:  true
   Events:      <none>
 ```
+Homework #13
+* При вызове strace -p1 -c выдаётся ошибка strace: attach: ptrace(PTRACE_SEIZE, 1): Operation not permitted. Решение - указать aylei/debug-agent:latest вместо aylei/debug-agent:0.0.1, т.к. не выставляются нужные capabilities при создании debug-контейнера
+* Установка netperf-operator:
+```shell
+  $ kubectl apply -f https://raw.githubusercontent.com/piontec/netperf-operator/master/deploy/crd.yaml
+  $ kubectl apply -f https://raw.githubusercontent.com/piontec/netperf-operator/master/deploy/rbac.yaml
+  $ kubectl apply -f https://raw.githubusercontent.com/piontec/netperf-operator/master/deploy/operator.yaml
+  # Запуск теста
+  $ kubectl apply -f https://raw.githubusercontent.com/piontec/netperf-operator/master/deploy/cr.yaml
+  # Тест прошёл успешно, в 
+  $ kubectl describe netperf.app.example.com/example
+  # видно, что Status: Done
+  # Применин сетевую политику:
+  $ kubectl apply -f kit/netperf-calico-policy.yaml
+  # Тест не успешен, зависает в Status: Started test
+  # В логах ноды ошибки с дропом пакетов. Добавим прав, исправим префикс, пересоздадим тестовое приложение (через удаление):
+  $ kubectl apply -f kit/kit-serviceaccount.yaml
+  $ kubectl apply -f kit/kit-clusterrole.yaml
+  $ kubectl apply -f kit/kit-clusterrolebinding.yaml
+  $ kubectl apply -f https://raw.githubusercontent.com/piontec/netperf-operator/master/deploy/cr.yaml
+  # Проверяем запуск daemonset
+  $ kubectl describe daemonset kube-iptables-tailer -n kube-system
+  ```
+  <details>
+```shell
+  Name:           kube-iptables-tailer
+  Selector:       app=kube-iptables-tailer
+  Node-Selector:  <none>
+  Labels:         <none>
+  Annotations:    deprecated.daemonset.template.generation: 1
+  Desired Number of Nodes Scheduled: 3
+  Current Number of Nodes Scheduled: 3
+  Number of Nodes Scheduled with Up-to-date Pods: 3
+  Number of Nodes Scheduled with Available Pods: 3
+  Number of Nodes Misscheduled: 0
+  Pods Status:  3 Running / 0 Waiting / 0 Succeeded / 0 Failed
+  Pod Template:
+    Labels:           app=kube-iptables-tailer
+    Service Account:  kube-iptables-tailer
+    Containers:
+    kube-iptables-tailer:
+      Image:      virtualshuric/kube-iptables-tailer:8d4296a
+      Port:       <none>
+      Host Port:  <none>
+      Command:
+        /kube-iptables-tailer
+        --log_dir=/my-service-logs
+        --v=4
+      Environment:
+        JOURNAL_DIRECTORY:     /var/log/journal
+        POD_IDENTIFIER:        label
+        POD_IDENTIFIER_LABEL:  netperf-type
+        IPTABLES_LOG_PREFIX:   calico-packet:
+      Mounts:
+        /my-service-logs from service-logs (rw)
+        /var/log/ from iptables-logs (ro)
+    Volumes:
+    iptables-logs:
+      Type:          HostPath (bare host directory volume)
+      Path:          /var/log
+      HostPathType:  
+    service-logs:
+      Type:       EmptyDir (a temporary directory that shares a pod's lifetime)
+      Medium:     
+      SizeLimit:  <unset>
+  Events:
+    Type     Reason            Age                 From                  Message
+    ----     ------            ----                ----                  -------
+    Warning  FailedCreate      13m (x16 over 16m)  daemonset-controller  Error creating: pods "kube-iptables-tailer-" is forbidden: error looking up service account kube-system/kube-iptables-tailer: serviceaccount "kube-iptables-tailer" not found
+    Normal   SuccessfulCreate  11m                 daemonset-controller  Created pod: kube-iptables-tailer-6vvkw
+    Normal   SuccessfulCreate  11m                 daemonset-controller  Created pod: kube-iptables-tailer-s4rvc
+```
+</details>
+
+  * В итоге, в описании пода видим ошибки связанные с сетевыми политиками:
+  ```shell
+  $ kubectl describe pod --selector=app=netperf-operator
+  ```
+  <details>
+  ```shell
+  Name:         netperf-client-cbc72f029e9b
+  Namespace:    default
+  Priority:     0
+  Node:         gke-cluster-1-default-pool-41f9e4c9-h8hf/10.128.0.47
+  Start Time:   Sun, 28 Mar 2021 17:48:28 +0400
+  Labels:       app=netperf-operator
+                netperf-type=client
+  Annotations:  cni.projectcalico.org/podIP: 10.4.2.9/32
+  Status:       Running
+  IP:           10.4.2.9
+  IPs:
+    IP:           10.4.2.9
+  Controlled By:  Netperf/example
+  Containers:
+    netperf-client-cbc72f029e9b:
+      Container ID:  docker://cf1b4d191905f0f4d3352d383e445f60bafad1be2f6e098acb989a21221429dd
+      Image:         tailoredcloud/netperf:v2.7
+      Image ID:      docker-pullable://tailoredcloud/netperf@sha256:0361f1254cfea87ff17fc1bd8eda95f939f99429856f766db3340c8cdfed1cf1
+      Port:          <none>
+      Host Port:     <none>
+      Command:
+        netperf
+        -H
+        10.4.2.8
+      State:          Running
+        Started:      Sun, 28 Mar 2021 17:50:40 +0400
+      Last State:     Terminated
+        Reason:       Error
+        Exit Code:    255
+        Started:      Sun, 28 Mar 2021 17:48:29 +0400
+        Finished:     Sun, 28 Mar 2021 17:50:39 +0400
+      Ready:          True
+      Restart Count:  1
+      Environment:    <none>
+      Mounts:
+        /var/run/secrets/kubernetes.io/serviceaccount from default-token-gt6gx (ro)
+  Conditions:
+    Type              Status
+    Initialized       True 
+    Ready             True 
+    ContainersReady   True 
+    PodScheduled      True 
+  Volumes:
+    default-token-gt6gx:
+      Type:        Secret (a volume populated by a Secret)
+      SecretName:  default-token-gt6gx
+      Optional:    false
+  QoS Class:       BestEffort
+  Node-Selectors:  <none>
+  Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                  node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+  Events:
+    Type     Reason      Age                  From                  Message
+    ----     ------      ----                 ----                  -------
+    Normal   Scheduled   2m22s                default-scheduler     Successfully assigned default/netperf-client-cbc72f029e9b to gke-cluster-1-default-pool-41f9e4c9-h8hf
+    Normal   Pulled      11s (x2 over 2m22s)  kubelet               Container image "tailoredcloud/netperf:v2.7" already present on machine
+    Normal   Created     10s (x2 over 2m22s)  kubelet               Created container netperf-client-cbc72f029e9b
+    Normal   Started     10s (x2 over 2m21s)  kubelet               Started container netperf-client-cbc72f029e9b
+    Warning  PacketDrop  10s                  kube-iptables-tailer  Packet dropped when sending traffic to server (10.4.2.8)
+
+
+  Name:         netperf-server-cbc72f029e9b
+  Namespace:    default
+  Priority:     0
+  Node:         gke-cluster-1-default-pool-41f9e4c9-h8hf/10.128.0.47
+  Start Time:   Sun, 28 Mar 2021 17:48:26 +0400
+  Labels:       app=netperf-operator
+                netperf-type=server
+  Annotations:  cni.projectcalico.org/podIP: 10.4.2.8/32
+  Status:       Running
+  IP:           10.4.2.8
+  IPs:
+    IP:           10.4.2.8
+  Controlled By:  Netperf/example
+  Containers:
+    netperf-server-cbc72f029e9b:
+      Container ID:   docker://a3ca4771c0f5ab7a6d1774a665f47adea3c09b6b39df60df3753a75b09dfa3e9
+      Image:          tailoredcloud/netperf:v2.7
+      Image ID:       docker-pullable://tailoredcloud/netperf@sha256:0361f1254cfea87ff17fc1bd8eda95f939f99429856f766db3340c8cdfed1cf1
+      Port:           <none>
+      Host Port:      <none>
+      State:          Running
+        Started:      Sun, 28 Mar 2021 17:48:27 +0400
+      Ready:          True
+      Restart Count:  0
+      Environment:    <none>
+      Mounts:
+        /var/run/secrets/kubernetes.io/serviceaccount from default-token-gt6gx (ro)
+  Conditions:
+    Type              Status
+    Initialized       True 
+    Ready             True 
+    ContainersReady   True 
+    PodScheduled      True 
+  Volumes:
+    default-token-gt6gx:
+      Type:        Secret (a volume populated by a Secret)
+      SecretName:  default-token-gt6gx
+      Optional:    false
+  QoS Class:       BestEffort
+  Node-Selectors:  <none>
+  Tolerations:     node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                  node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+  Events:
+    Type     Reason      Age    From                  Message
+    ----     ------      ----   ----                  -------
+    Normal   Scheduled   2m25s  default-scheduler     Successfully assigned default/netperf-server-cbc72f029e9b to gke-cluster-1-default-pool-41f9e4c9-h8hf
+    Normal   Pulled      2m24s  kubelet               Container image "tailoredcloud/netperf:v2.7" already present on machine
+    Normal   Created     2m24s  kubelet               Created container netperf-server-cbc72f029e9b
+    Normal   Started     2m24s  kubelet               Started container netperf-server-cbc72f029e9b
+    Warning  PacketDrop  2m22s  kube-iptables-tailer  Packet dropped when receiving traffic from 10.4.2.9
+    Warning  PacketDrop  11s    kube-iptables-tailer  Packet dropped when receiving traffic from client (10.4.2.9)
+  ```
+  </details>
