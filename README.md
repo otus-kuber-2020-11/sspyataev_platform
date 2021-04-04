@@ -779,3 +779,14 @@ Homework #13
     Normal   Started     2m24s  kubelet               Started container netperf-server-cbc72f029e9b
     Warning  PacketDrop  2m22s  kube-iptables-tailer  Packet dropped when receiving traffic from 10.4.2.9
     Warning  PacketDrop  11s    kube-iptables-tailer  Packet dropped when receiving traffic from client (10.4.2.9)
+```
+
+Homework #14
+* Созданы четыре ноды в GCP - 1 master & 3 workers
+* На всех нодах проведены подготовительные работы (выключен swap, включена маршрутизация, установлен docker)
+* На всех нодах установлен kubeadm 1.17.4
+* Создан кластер на мастере, прижойнены три воркера
+* Развёрнута нагрузка в виде deployment с nginx
+* Обновлён kubeadm на мастере до версии 1.18.0. Обновлены остальные компоненты - API-server, kube-proxy, controllermanager
+* Поочерёдно обновлены воркеры кластера до версии 1.18.0
+* Рассмотрено разворачивание кластера kubernetes через kubespray
